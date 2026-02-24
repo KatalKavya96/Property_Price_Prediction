@@ -34,3 +34,9 @@ reports/ → Final project report
 - Aabir Sarkar
 - Kushagra Maheswari
 - Pratyush Chouksey
+
+## Project Log
+
+### Step 1 — Dataset Audit
+- Loaded dataset into Kaggle Notebook successfully.
+- Verified shape, column names, data types, missing values, and duplicates.
