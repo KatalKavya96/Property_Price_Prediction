@@ -1,66 +1,153 @@
 import streamlit as st
 import joblib
 import pandas as pd
+import numpy as np
 
-st.title("🏠 Property Price Prediction")
 
-# Load Model
-artifacts = joblib.load("model/house_price_model.joblib")
-
-model = artifacts["model"]
-scaler = artifacts["scaler"]
-columns = artifacts["columns"]
-
-st.write("Enter Property Details")
-
-# Inputs
-area = st.number_input("Area", 500, 10000, 3000)
-bedrooms = st.number_input("Bedrooms", 1, 10, 3)
-bathrooms = st.number_input("Bathrooms", 1, 5, 2)
-stories = st.number_input("Stories", 1, 5, 2)
-parking = st.number_input("Parking", 0, 5, 1)
-
-mainroad = st.selectbox("Main Road Access", ["Yes","No"])
-guestroom = st.selectbox("Guest Room", ["Yes","No"])
-basement = st.selectbox("Basement", ["Yes","No"])
-hotwaterheating = st.selectbox("Hot Water Heating", ["Yes","No"])
-airconditioning = st.selectbox("Air Conditioning", ["Yes","No"])
-prefarea = st.selectbox("Preferred Area", ["Yes","No"])
-
-furnishingstatus = st.selectbox(
-    "Furnishing Status",
-    ["Unfurnished","Semi-Furnished","Furnished"]
+# ----------------------------------------
+# PAGE CONFIG
+# ----------------------------------------
+st.set_page_config(
+    page_title="AI Property Price Predictor",
+    page_icon="🏠",
+    layout="wide"
 )
 
-# Encoding
-yes_no = lambda x: 1 if x == "Yes" else 0
+# ----------------------------------------
+# CUSTOM CSS (EXTREME UI)
+# ----------------------------------------
+st.markdown("""
+<style>
 
-furnishing_map = {
-    "Unfurnished":0,
-    "Semi-Furnished":1,
-    "Furnished":2
+body {
+background: linear-gradient(135deg,#0f172a,#020617);
+color:white;
 }
 
-if st.button("Predict Price"):
+.main-title{
+font-size:48px;
+font-weight:700;
+text-align:center;
+margin-bottom:10px;
+}
 
-    input_data = pd.DataFrame([[
-        area,
-        bedrooms,
-        bathrooms,
-        stories,
-        parking,
-        yes_no(mainroad),
-        yes_no(guestroom),
-        yes_no(basement),
-        yes_no(hotwaterheating),
-        yes_no(airconditioning),
-        yes_no(prefarea),
-        furnishing_map[furnishingstatus]
-    ]], columns=columns)
+.sub{
+text-align:center;
+color:#94a3b8;
+margin-bottom:40px;
+}
 
-    # Scale same as training
-    scaled_data = scaler.transform(input_data)
+.card{
+background: rgba(255,255,255,0.05);
+padding:25px;
+border-radius:15px;
+backdrop-filter: blur(12px);
+box-shadow:0px 0px 25px rgba(0,0,0,0.4);
+}
 
-    prediction = model.predict(scaled_data)
+.predict-btn{
+background:linear-gradient(90deg,#6366f1,#22c55e);
+color:white;
+padding:12px;
+border-radius:10px;
+font-size:18px;
+}
 
-    st.success(f"Estimated Property Price: ₹ {prediction[0]:,.0f}")
+.price-box{
+font-size:40px;
+font-weight:bold;
+text-align:center;
+padding:25px;
+border-radius:15px;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+color:black;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ----------------------------------------
+# TITLE
+# ----------------------------------------
+st.markdown(
+'<div class="main-title">🏠 AI Property Price Prediction</div>',
+unsafe_allow_html=True
+)
+
+st.markdown(
+'<div class="sub">Powered by Random Forest • Ames Housing Dataset</div>',
+unsafe_allow_html=True
+)
+
+# ----------------------------------------
+# LOAD MODEL
+# ----------------------------------------
+artifacts = joblib.load("model/ames_rf_model.joblib")
+
+model = artifacts["model"]
+feature_columns = artifacts["feature_columns"]
+
+# ----------------------------------------
+# INPUT SECTION
+# ----------------------------------------
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("### Property Dimensions")
+
+    OverallQual = st.slider("Overall Quality",1,10,5)
+    GrLivArea = st.number_input("Living Area (sq ft)",500,6000,1500)
+    GarageCars = st.slider("Garage Capacity",0,4,2)
+    TotalBsmtSF = st.number_input("Basement Area",0,3000,800)
+
+with col2:
+    st.markdown("### Property Details")
+
+    FullBath = st.slider("Full Bathrooms",0,4,2)
+    YearBuilt = st.number_input("Year Built",1900,2024,2000)
+    Fireplaces = st.slider("Fireplaces",0,3,1)
+    LotArea = st.number_input("Lot Area",1000,50000,8000)
+
+
+# ----------------------------------------
+# PREDICTION
+# ----------------------------------------
+
+if st.button("🚀 Predict Property Price"):
+
+    # create empty dataframe
+    input_df = pd.DataFrame(
+        np.zeros((1,len(feature_columns))),
+        columns=feature_columns
+    )
+
+    # fill important numeric columns
+    def safe_fill(col,value):
+        if col in input_df.columns:
+            input_df[col] = value
+
+    safe_fill("OverallQual",OverallQual)
+    safe_fill("GrLivArea",GrLivArea)
+    safe_fill("GarageCars",GarageCars)
+    safe_fill("TotalBsmtSF",TotalBsmtSF)
+    safe_fill("FullBath",FullBath)
+    safe_fill("YearBuilt",YearBuilt)
+    safe_fill("Fireplaces",Fireplaces)
+    safe_fill("LotArea",LotArea)
+
+    # prediction
+    prediction = model.predict(input_df)[0]
+
+    st.markdown(
+        f"""
+        <div class="price-box">
+        Estimated Price 💰 <br>
+        ₹ {prediction:,.0f}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.balloons()
