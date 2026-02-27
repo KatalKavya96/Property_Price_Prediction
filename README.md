@@ -245,5 +245,3 @@ Key observations from experimentation include:
 - Property prices demonstrate strong linear dependence on core housing attributes such as area and number of bathrooms.
 - Simpler interpretable models such as Linear Regression can outperform more complex models when dataset relationships are primarily linear.
 - Proper preprocessing and evaluation play a critical role in achieving reliable prediction performance.
-
----
