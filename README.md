@@ -1,33 +1,44 @@
 # Property Price Prediction System
 
 ## Overview
-This project predicts residential property prices using Machine Learning models such as Linear Regression and Decision Tree Regression.
+This project predicts residential property prices using Machine Learning.
 
-The goal is to analyse housing features and estimate accurate property prices through data driven modeling.
+We trained and compared models, selected the best performer, and deployed it using a Streamlit web app that predicts prices in **USD**.
+
+---
 
 ## Dataset
-Dataset Source:
-https://www.kaggle.com/datasets/yasserh/housing-prices-dataset
+**Dataset:** Ames Housing (Kaggle “House Prices: Advanced Regression Techniques”)  
+**Typical features in the dataset include:**
+- Overall quality score
+- Living area (square feet)
+- Basement area
+- Garage capacity
+- Year built
+- Bathrooms, fireplaces, lot area
+- Many categorical features (neighborhood, exterior, heating, etc.)
 
-Features include:
-- Area
-- Bedrooms
-- Bathrooms
-- Stories
-- Parking
-- Air Conditioning
-- Furnishing Status
+**Target variable:** SalePrice (USD)
 
-Target Variable:
-- Price
+---
+
+## Tech Stack
+- Python
+- Pandas, NumPy
+- Scikit-learn
+- Joblib (model saving/loading)
+- Streamlit (deployment UI)
+
+---
 
 ## Project Structure
+data/ → dataset files (train.csv)  
+notebooks/ → training + evaluation notebook  
+model/ → saved model artifact (.joblib)  
+app.py → Streamlit UI  
+requirements.txt → pinned libraries (important for joblib compatibility)  
 
-data/ → Dataset files  
-notebooks/ → Model development and EDA  
-models/ → Saved trained models  
-app/ → Deployment UI  
-reports/ → Final project report  
+---
 
 ## Team
 - Kavya Katal
@@ -35,213 +46,150 @@ reports/ → Final project report
 - Kushagra Maheswari
 - Pratyush Chouksey
 
+---
+
 # Project Log
 
----
-
 ## Step 1 — Dataset Audit
+We loaded the dataset and checked basic data quality.
 
-The dataset was loaded and inspected using a Kaggle Notebook environment.
-
-Tasks Performed:
-- Verified dataset shape and structure.
-- Reviewed column names and feature types.
-- Checked for missing values.
-- Checked for duplicate records.
+Tasks performed:
+- Checked dataset shape and column types
+- Checked missing values
+- Verified target column (SalePrice) exists
+- Confirmed numeric + categorical columns are present
 
 Result:
-- No missing values detected.
-- No duplicate rows found.
-- Dataset confirmed clean and ready for analysis.
+- Missing values exist in several columns (common in Ames Housing).
+- We handled missing values inside the preprocessing pipeline.
 
 ---
 
-## Step 2 — Exploratory Data Analysis (EDA)
-
-### Price Distribution Analysis
-
-Property price distribution was analyzed to understand overall pricing trends and detect anomalies.
-
-Observation:
-Property prices show a slightly right-skewed distribution, indicating the presence of higher-valued properties within the dataset.
-
-Generated Visualization:
-- Price Distribution Histogram
-
----
-
-### Correlation Analysis
-
-Correlation analysis was performed to identify numerical features strongly associated with property prices.
-
-Key Insights:
-- Area shows the strongest positive correlation with price (~0.54).
-- Bathrooms significantly influence property valuation.
-- Number of stories also contributes to higher pricing.
-- Multiple independent predictors exist, supporting effective model learning.
-
-Generated Visualization:
-- Feature Correlation Heatmap
-
----
-
-## Step 3 — Feature Encoding and Model Preparation
-
-Machine learning models require numerical inputs; therefore categorical variables were converted into numerical representations.
-
-Encoding Strategy:
-- Binary categorical features were mapped using:
-  - Yes → 1
-  - No → 0
-- Furnishing status was ordinally encoded to preserve logical ranking:
-  - Unfurnished → 0
-  - Semi-Furnished → 1
-  - Furnished → 2
-
-Reasoning:
-Binary and ordinal encoding were preferred over one-hot encoding to maintain feature interpretability while avoiding unnecessary dimensional expansion.
-
-Outcome:
-The dataset is now fully numeric and prepared for machine learning model training.
-
----
-
-## Step 4 — Train Test Split
-
-The dataset was divided into training and testing subsets to evaluate
-model performance on unseen data.
-
-Configuration:
-- Training Data: 80%
-- Testing Data: 20%
-- Random State: 42 (ensures reproducibility)
-
-This step prevents overfitting and enables reliable performance evaluation.
-
----
-
-## Step 5 — Feature Scaling
-
-Feature scaling was applied to normalize input feature magnitudes before training the Linear Regression model.
+## Step 2 — Train/Validation Split
+We split the dataset into:
+- Training set (used for learning)
+- Validation set (used for evaluation)
 
 Reason:
-Housing attributes such as area contain significantly larger numerical values compared to binary features like parking or air conditioning. Scaling ensures that all features contribute proportionally during model learning.
-
-Implementation:
-- StandardScaler from Scikit-learn was used.
-- Scaling parameters were learned only from the training dataset.
-- The same transformation was applied to testing data to prevent data leakage.
-
-Outcome:
-Feature distributions were standardized while maintaining dataset consistency for model training.
+- Measures generalization on unseen data
+- Helps prevent overfitting decisions
 
 ---
 
-## Step 6 — Linear Regression Model Training
+## Step 3 — Preprocessing Pipeline
+Ames Housing has both numeric and categorical data, so we used a **pipeline** to make preprocessing consistent for training and deployment.
 
-A Linear Regression model was implemented as the baseline prediction model to estimate property prices.
+Pipeline steps:
+- **Numeric columns**
+  - Missing value handling (imputation)
+  - Scaling (StandardScaler)
+- **Categorical columns**
+  - Missing value handling
+  - One-hot encoding (converts categories into numbers)
 
-Objective:
-To model the linear relationship between housing characteristics and property price.
+Why pipeline?
+- Same transformations run during training and Streamlit inference
+- Prevents “train vs deploy mismatch”
 
-Process:
-- Model trained using scaled training data.
-- Predictions generated on unseen test data.
+---
 
-Evaluation Metrics Used:
-- Mean Absolute Error (MAE)
-- Root Mean Squared Error (RMSE)
+## Step 4 — Target Transformation (log1p)
+SalePrice is right-skewed (few very expensive houses).
+
+We trained on:
+- `log1p(SalePrice)`
+
+At prediction time, we convert back using:
+- `expm1(prediction)`
+
+Why?
+- Improves stability
+- Reduces impact of outliers
+- Often improves accuracy for price prediction
+
+---
+
+## Step 5 — Baseline Model: Linear Regression
+We trained **Linear Regression** on processed features with the log target.
+
+Evaluation metrics used:
+- MAE (Mean Absolute Error)
+- RMSE (Root Mean Squared Error)
 - R² Score
 
-Results:
-- MAE ≈ 979,679
-- RMSE ≈ 1,331,071
-- R² Score ≈ 0.65
-
-Insight:
-The model successfully captured major pricing trends within the dataset and demonstrated stable generalization performance.
+Observation:
+- Linear Regression performed best in our comparison (example: R² ≈ 0.93 on validation).
+- It generalized better than the more complex model.
 
 ---
 
-## Step 7 — Decision Tree Regression
-
-To capture potential non-linear relationships between housing features and price, a Decision Tree Regressor was implemented.
-
-Motivation:
-Decision Trees can model conditional feature relationships that Linear Regression may not capture effectively.
-
-Initial Results:
-- MAE ≈ 1,270,788
-- RMSE ≈ 1,718,102
-- R² Score ≈ 0.41
+## Step 6 — Comparison Model: Random Forest
+We also trained a Random Forest regressor.
 
 Observation:
-The default Decision Tree showed signs of overfitting and weaker generalization compared to Linear Regression.
-
----
-
-## Step 8 — Decision Tree Optimization
-
-Hyperparameter tuning was performed to improve Decision Tree performance and reduce overfitting.
-
-Parameters Adjusted:
-- Maximum Tree Depth
-- Minimum Samples per Split
-- Minimum Samples per Leaf
-
-Optimized Results:
-- MAE ≈ 1,216,327
-- RMSE ≈ 1,610,145
-- R² Score ≈ 0.48
-
-Insight:
-Although optimization improved performance slightly, Linear Regression continued to outperform Decision Tree Regression for this dataset.
+- Random Forest performed lower than Linear Regression in our run (example: R² ≈ 0.88).
+- This suggests the dataset behaves strongly linear after preprocessing + log transform.
 
 Conclusion:
-The housing dataset demonstrates predominantly linear feature relationships.
+- Complex model ≠ better model by default.
 
 ---
 
-## Step 9 — Model Selection and Final Evaluation
-
-Based on comparative evaluation, Linear Regression was selected as the final prediction model.
-
-Reasoning:
-- Higher R² Score.
-- Better generalization capability.
-- Stable prediction behavior across unseen data.
-
-Additional Evaluation:
-Prediction accuracy was analyzed using percentage-based error metrics.
-
-Result:
-- Overall Prediction Accuracy ≈ 78%
-
-This indicates that predicted property prices remain close to actual market values within a reasonable deviation range.
+## Step 7 — Final Model Selection
+We selected **Linear Regression** because:
+- Higher validation R²
+- Stable, logical predictions
+- Fast inference for UI
 
 ---
 
-## Step 10 — Manual Prediction Testing
+## Step 8 — Saving the Model (Joblib Artifact)
+We saved the complete pipeline (preprocessing + model) using joblib.
 
-Manual inference testing was conducted to validate real-world usability of the trained model.
+Saved artifact contains:
+- `pipeline` (ColumnTransformer + LinearRegression)
+- `target_transform` = "log1p"
+- `train_columns` (to build correct input dataframe in Streamlit)
+- (optional) evaluation metrics like MAE/RMSE/R²
 
-Procedure:
-- Custom housing feature values were manually provided as model input.
-- Inputs were transformed using the same scaling pipeline used during training.
-- Predictions were generated using the trained Linear Regression model.
+Important:
+Joblib files require **matching scikit-learn versions** between training and deployment.
 
-Example Output:
-Predicted Property Price ≈ 6,740,317
-
-Observation:
-Model predictions responded logically to feature variations such as area size and available amenities, confirming correct model behavior.
+Training environment versions:
+- scikit-learn: 1.6.1
+- joblib: 1.5.3
+- numpy: 2.0.2
+- pandas: 2.3.3
 
 ---
 
-## Step 11 — Key Learning and Insights
+## Step 9 — Streamlit Deployment (USD Output)
+We built a dashboard-style Streamlit UI to:
+- Collect user inputs (highest impact features first)
+- Run inference using the saved pipeline
+- Display predicted price in **USD**
+- Show useful insights:
+  - Sensitivity curve (how price changes when one feature varies)
+  - Marginal impact table (how much price changes for a small step)
 
-Key observations from experimentation include:
+Deployment logic:
+1. Create a 1-row dataframe with training columns
+2. Fill available input columns safely
+3. Predict using `pipeline.predict()`
+4. Convert from log scale back to USD using `expm1()`
 
-- Property prices demonstrate strong linear dependence on core housing attributes such as area and number of bathrooms.
-- Simpler interpretable models such as Linear Regression can outperform more complex models when dataset relationships are primarily linear.
-- Proper preprocessing and evaluation play a critical role in achieving reliable prediction performance.
+---
+
+## Step 10 — Key Learnings
+- Pipelines matter more than the model alone.
+- Log-transforming the target can improve price prediction.
+- Simpler models can outperform complex ones if relationships are linear.
+- Deployment needs correct version management (sklearn/joblib compatibility).
+
+---
+
+## Future Improvements (Optional)
+- Add more user inputs (Neighborhood, HouseStyle, KitchenQual, etc.)
+- Compute a real uncertainty band using validation residuals
+- Add explainability (SHAP or coefficient-based breakdown)
+- Add input validation and realistic range warnings
