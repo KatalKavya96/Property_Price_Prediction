@@ -5,8 +5,6 @@ This project predicts residential property prices using Machine Learning.
 
 We trained and compared models, selected the best performer, and deployed it using a Streamlit web app that predicts prices in **USD**.
 
----
-
 ## Dataset
 **Dataset:** Ames Housing (Kaggle “House Prices: Advanced Regression Techniques”)  
 **Typical features in the dataset include:**
