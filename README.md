@@ -23,13 +23,51 @@ We trained and compared models, selected the best performer, and deployed it usi
 ---
 
 ## Tech Stack
-- Python
-- Pandas, NumPy
+
+### Core Language
+- Python 3.10+
+
+### Data Processing
+- Pandas
+- NumPy
+
+### Machine Learning
 - Scikit-learn
-- Joblib (model saving/loading)
-- Streamlit (deployment UI)
+- Joblib (model serialization)
+
+### Visualization
+- Matplotlib / Seaborn (EDA & model comparison plots)
+
+### Deployment
+- Streamlit (UI)
+- Streamlit Cloud (Hosting)
+
+### Version Control
+- Git
+- GitHub
 
 ---
+
+---
+
+## Setup & Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/KatalKavya96/Property_Price_Prediction.git
+cd Property_Price_Prediction
+```
+
+### 2. Create Virtual Environment
+python -m venv .venv
+source .venv/bin/activate      # Mac/Linux
+
+### 3. Install Dependencies
+pip install -r requirements.txt
+
+### 4. Run the Streamlit App
+streamlit run app.py
 
 ## Project Structure
 data/ → dataset files (train.csv)  
