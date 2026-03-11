@@ -229,3 +229,4 @@ Deployment logic:
 - Compute a real uncertainty band using validation residuals
 - Add explainability (SHAP or coefficient-based breakdown)
 - Add input validation and realistic range warnings
+
