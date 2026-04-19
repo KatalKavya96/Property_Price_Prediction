@@ -230,3 +230,101 @@ Deployment logic:
 - Add explainability (SHAP or coefficient-based breakdown)
 - Add input validation and realistic range warnings
 
+# AI AGENT Report Content (ENDSEM - Milestone 2)
+
+## Abstract
+
+This project presents an intelligent real estate advisory system
+combining Machine Learning, Retrieval-Augmented Generation (RAG), and
+LangGraph workflows. The system predicts property prices and generates
+advisory reports using ML predictions, comparable analysis, and
+contextual knowledge.
+
+## Problem Statement
+
+Real estate investment decisions require multiple factors such as price,
+trends, and comparables. This project builds a system that: - Predicts
+property prices - Retrieves market insights - Generates AI-based
+advisory
+
+## System Overview
+
+Pipeline: User Input → ML Prediction → Comparable Analysis → RAG →
+LangGraph → LLM → Output
+
+## Technologies
+
+-   Streamlit
+-   Scikit-learn
+-   Pandas, NumPy
+-   ChromaDB
+-   Sentence Transformers
+-   LangGraph
+-   OpenRouter (LLM)
+
+## ML Model
+
+Predicts price based on features like area, quality, etc.
+
+## Comparable Analysis
+
+Compares predicted price with dataset: - Avg price - Range - Over/under
+valuation
+
+## RAG
+
+-   ChromaDB vector store
+-   Sentence transformers embeddings
+-   Retrieves top-k relevant insights
+
+## LangGraph Workflow
+
+Nodes: 1. Retrieve Context 2. Analyze Property 3. Generate Report
+
+## LLM Integration
+
+Uses OpenRouter to generate structured advisory.
+
+## Fallback System
+
+If API fails: - Rule-based advisory - Ensures robustness
+
+## UI
+
+-   Streamlit-based
+-   Inputs + prediction + advisory
+-   Evidence section
+-   History tracking
+
+## Output Format
+
+-   Property Valuation
+-   Market Insights
+-   Comparable Analysis
+-   Recommendation
+-   Risks
+-   Disclaimer
+
+## Limitations
+
+-   LLM not guaranteed accurate
+-   Limited dataset
+-   API dependency
+
+## Future Work
+
+-   Real-time data APIs
+-   Better RAG dataset
+-   Multi-agent validation
+
+## Conclusion
+
+This system integrates ML, RAG, and agent workflows to provide
+intelligent real estate advisory.
+
+## Viva Points
+
+-   ML vs AI reasoning
+-   Why RAG
+-   Why LangGraph
+-   Advisory is grounded, not guaranteed
