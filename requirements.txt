@@ -3,3 +3,19 @@ scikit-learn==1.6.1
 joblib==1.5.3
 numpy==2.0.2
 pandas==2.3.3
+
+# Agent + LLM
+requests
+python-dotenv
+
+# LangChain + RAG
+langchain
+langchain-community
+langchain-huggingface
+langgraph
+
+# Vector DB
+chromadb
+
+# Embeddings
+sentence-transformers
